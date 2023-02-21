@@ -14,12 +14,12 @@ int main()
     /************************************************************************************************** 
      * Parameter 1:                                                                                   *
      * Format specifiers that instruct the compiler to read in and store all of the characters except *
-	 * the newline character, then read in and discard the newline character.                         *
-	 *                                                                                                *
+     * the newline character, then read in and discard the newline character.                         *
+     *                                                                                                *
      * Parameter 2:                                                                                   *
-	 * The memory address of the variable s. s stores the memory address of the first element of the  *
-	 * char array.                                                                                    *
-	 **************************************************************************************************/
+     * The memory address of the variable s. s stores the memory address of the first element of the  *
+     * char array.                                                                                    *
+     **************************************************************************************************/
 
     scanf("%[^\n]%*c", &s);
     
