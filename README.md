@@ -20,7 +20,7 @@
 - [Introduction](#introduction)
   - ["Hello World!" in C](#hello-world-in-c-easy)
 - [Structs and Enums](#structs-and-enums)
-  - [Boxes through a Tunnel](#boxes-through-a-Tunnel-easy)
+  - [Boxes through a Tunnel](#boxes-through-a-tunnel-easy)
   - [Small Triangles, Large Triangles](#small-triangles-large-triangles-medium)
 
 # Introduction
@@ -71,7 +71,7 @@ It is guaranteed that all the areas are different.
 
 The best way to calculate a area of a triangle with sides `a`, `b`, and `c` is Heron's formula:
 
-$S = \sqrt{p * (p - a) * (p - b) * p - c)}$ where $p = (a+b+c)/2$.
+$S = \sqrt{p \times (p - a) \times (p - b) \times (p - c)}$ where $p = \frac{(a+b+c)}{2}$.
 
 ### Input Format
 
@@ -81,6 +81,6 @@ The first line of each test file contains a single integer `n`. lines follow wit
 
 * $1 \leq n \leq 100$
 * $1 \leq a_i, b_i, c_i \leq 70$
-* $a_i + b+i \le c_i,a_i + c_i \le b_i$ and $b_i + c_i \le a_i$
+* $a_i + b+i \gt c_i,a_i + c_i \gt b_i$ and $b_i + c_i \gt a_i$
 
 #### [Solution](./Structs%20and%20Enums/small_triangles_large_triangles.c)
