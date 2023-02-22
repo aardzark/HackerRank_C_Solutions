@@ -19,6 +19,8 @@
 
 - [Introduction](#introduction)
   - ["Hello World!" in C](#hello-world-in-c-easy)
+- [Structs and Enums]
+  - [Boxes through a Tunnel](#boxes-through-a-Tunnel-easy)
 
 # Introduction
 ## "Hello World!" in C: Easy
@@ -28,6 +30,31 @@ In this challenge, we will learn some basic concepts of C that will get you star
 
 ### Task
 
-This challenge requires you to print ```Hello, World!``` on a single line, and then print the already provided input string to [stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_.28stdout.29). If you are not familiar with C, you may want to read about the printf() command.
+This challenge requires you to print `Hello, World!` on a single line, and then print the already provided input string to [stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_.28stdout.29). If you are not familiar with C, you may want to read about the printf() command.
 
 #### [Solution](./Introduction/hello_world_in_c.c)
+
+# Structs and Enums
+## Boxes through a Tunnel: Easy
+
+You are transporting some boxes through a tunnel, where each box is a parallelepiped, and is characterized by its length, width and 
+height. The height of the tunnel `41` feet and the width can be assumed to be infinite. A box can be carried through the tunnel only 
+if its height is strictly less than the tunnel's height. Find the volume of each box that can be successfully transported to the other 
+end of the tunnel. Note: Boxes cannot be rotated.
+
+### Input Format
+
+The first line contains a single integer `n`, denoting the number of boxes.
+`n` lines follow with three integers on each separated by single spaces — ${length_i}$, ${width_i}$, and ${height_i}$ 
+which are length, width and height in feet of the *i*-th box.
+
+### Constraints
+
+* $(1 \leq n \leq 100)$
+* $(1 \leq length_i, width_i, height_i, \leq 100)$
+
+### Output Format
+
+For every box from the input which has a height lesser than `41` feet, print its volume in a separate line.
+
+#### [Solution](./Structs and Enums/boxes_through_a_tunnel.c)
