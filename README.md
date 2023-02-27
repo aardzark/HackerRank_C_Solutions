@@ -226,7 +226,7 @@ If the integer is `3`, no lines follow and the town with the most number of pack
 For queries of type `1`, print all packages in the format provided in the problem statement. 
 For queries of type `3`, print "Town with the most number of packages is `town_name`" on a separate line.
 
-#### [Solution: In Progress](./Structs%20and%20Enums/Hard/post_transition.c)
+#### [Solution](./Structs%20and%20Enums/Hard/post_transition.c)
 
 
 

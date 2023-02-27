@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 #define MAX_STRING_LENGTH 6
 
 // Credit goes to @bugfeeder: https://stackoverflow.com/a/10959486 for the below definition.
@@ -35,7 +36,6 @@ struct town {
 typedef struct town town;
 
 void print_all_packages(town t) {
-    /*
     printf("%s:\n", t.name);
 
     for (int i = 0; i < t.offices_count; i++) {
@@ -45,97 +45,124 @@ void print_all_packages(town t) {
             printf("\t\t%s\n", t.offices[i].packages[j].id);
         }
     }
-    */
 }
 
 void send_all_acceptable_packages(town* source, int source_office_index, town* target, int target_office_index) {
-    /*
-    post_office target_office = target->offices[target_office_index];
-    post_office source_office = source->offices[source_office_index];
-    printf("Source town name: %s:\n", source->name);
-    printf("Source office, %d, packages:\n", source_office_index);
-    printf("Source office # of packages: %d\n", source_office.packages_count);
-    for (int i = 0; i < source_office.packages_count; i++) {
-        printf("Package: %s\n", source_office.packages[i].id);
-    }
-
-    printf("Target town name: %s:\n", target->name);
-    printf("Target office, %d, packages:\n", target_office_index);
-    printf("Target office before adding packages:\n");
-    printf("Target office min_weight of package: %d\n", target_office.min_weight);
-    printf("Target office max_weight of package: %d\n", target_office.max_weight);
-    printf("Target office # of packages: %d\n", target_office.packages_count);
-    for (int i = 0; i < target_office.packages_count; i++) {
-        printf("Package: %s\n", target_office.packages[i].id);
-    }
-
-    int total = 0;
+    // Count the number of packages being sent from the source town's office to the target town's office
+    int sending_packages_count = 0;
     for (int i = 0; i < source->offices[source_office_index].packages_count; i++) {
-        if (target_office.min_weight <= source_office.packages[i].weight <= target_office.max_weight) {
-            total++;
-            sent_packages = realloc(target_office.packages, sizeof(package)*total);
-            sent_packages[i] = source_office.packages[i];
+        if (target->offices[target_office_index].min_weight <= source->offices[source_office_index].packages[i].weight
+                && source->offices[source_office_index].packages[i].weight <= target->offices[target_office_index].max_weight) {
+            sending_packages_count++;
         }
     }
-    target_office.packages = sent_packages;
-    target_office.packages_count += total;
 
-    printf("Target office after adding packages:\n");
-    for (int i = 0; i < target_office.packages_count; i++) {
-        printf("Package: %s\n", target_office.packages[i].id);
+    // Initialize a package pointer and allocate the exact amount of memory needed for the number of packages that will be sent to the target office.
+    package* sent_packages = malloc(sizeof(package) * sending_packages_count);
+    // Initialize a package pointer and allocate the exact amount of memory needed for the number of packages that will be returned to the source office.
+    package* returned_packages = malloc(sizeof(package) * (source->offices[source_office_index].packages_count - sending_packages_count));
+    // Iterator to keep track of the current index for the sent_packages array
+    int packages_sent = 0;
+    // Iterator to keep track of the current index for the returned_packages array
+    int packages_returned = 0;
+    // Iterate through the source office packages and redirect each package to either the sent_packages array or the returned_packages array
+    for (int i = 0; i < source->offices[source_office_index].packages_count; i++) {
+        if (target->offices[target_office_index].min_weight <= source->offices[source_office_index].packages[i].weight
+            && source->offices[source_office_index].packages[i].weight <= target->offices[target_office_index].max_weight) {
+            sent_packages[packages_sent] = source->offices[source_office_index].packages[i];
+            packages_sent++;
+        } else {
+            returned_packages[packages_returned] = source->offices[source_office_index].packages[i];
+            packages_returned++;
+        }
     }
-    */
+
+    // Reallocate the exact amount memory needed to store the array of sent packages appended to the array of existing packages at the target office
+    target->offices[target_office_index].packages = (package*)realloc(target->offices[target_office_index].packages, sizeof(package) * (target->offices[target_office_index].packages_count + packages_sent));
+    // Append the array of sent packages to the existing array of packages at the target office
+    memmove(target->offices[target_office_index].packages + target->offices[target_office_index].packages_count, sent_packages, sizeof(package) * packages_sent);
+    free(sent_packages);
+    target->offices[target_office_index].packages_count += sending_packages_count;
+
+    // Reallocate the exact amount memory needed to store the array of returned packages at the source office
+    source->offices[source_office_index].packages = (package*)realloc(source->offices[source_office_index].packages, sizeof(package) * (packages_returned));
+    // Copy the array of returned packages to the start of the packages array at the source office and overwrite it
+    memmove(source->offices[source_office_index].packages, returned_packages, sizeof(package) * packages_returned);
+    free(returned_packages);
+    source->offices[source_office_index].packages_count -= sending_packages_count;
 }
 
 town town_with_most_packages(town* towns, int towns_count) {
-    return towns[0];
+    town* town_with_most_packages = malloc(sizeof(town));
+
+    int previous_packages_count = 0;
+    int current_packages_count = 0;
+    for (int i = 0; i < towns_count; i++) {
+        for (int j = 0; j < towns[i].offices_count; j++) {
+            for(int k = 0; k < towns[i].offices[j].packages_count; k++) {
+                current_packages_count++;
+            }
+        }
+        if (current_packages_count > previous_packages_count) {
+            previous_packages_count = current_packages_count;
+            town_with_most_packages = &towns[i];
+        }
+        current_packages_count = 0;
+    }
+    return town_with_most_packages[0];
 }
 
 town* find_town(town* towns, int towns_count, char* name) {
-    return &towns[0];
+    town* town = malloc(sizeof(town));
+    for (int i = 0; i < towns_count; i++) {
+        if (strcmp(towns[i].name, name) == 0) {
+            town = &towns[i];
+        }
+    }
+    return town;
 }
 
 town* initialize_towns(int towns_count) {
     town* towns_test = malloc(sizeof(town)*towns_count);
     towns_test[0].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
-    towns_test[0].name = 'A';
+    towns_test[0].name[0] = 'A';
     towns_test[0].offices_count = 2;
     towns_test[0].offices = malloc(sizeof(post_office) * towns_test[0].offices_count);
     towns_test[0].offices[0].packages_count = 2;
     towns_test[0].offices[0].min_weight = 1;
     towns_test[0].offices[0].max_weight = 3;
     towns_test[0].offices[0].packages = malloc(sizeof(package) * towns_test[0].offices[0].packages_count);
-    towns_test[0].offices[0].packages[0].id = 'a';
+    towns_test[0].offices[0].packages[0].id[0] = 'a';
     towns_test[0].offices[0].packages[0].weight = 2;
-    towns_test[0].offices[0].packages[1].id = 'b';
+    towns_test[0].offices[0].packages[1].id[0] = 'b';
     towns_test[0].offices[0].packages[1].weight = 3;
     towns_test[0].offices[1].packages_count = 1;
     towns_test[0].offices[1].min_weight = 2;
     towns_test[0].offices[1].max_weight = 4;
     towns_test[0].offices[1].packages = malloc(sizeof(package) * towns_test[0].offices[1].packages_count);
-    towns_test[0].offices[1].packages[0].id = 'c';
+    towns_test[0].offices[1].packages[0].id[0] = 'c';
     towns_test[0].offices[1].packages[0].weight = 2;
     towns_test[1].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
-    towns_test[1].name = 'B';
+    towns_test[1].name[0] = 'B';
     towns_test[1].offices_count = 1;
     towns_test[1].offices = malloc(sizeof(post_office) * towns_test[1].offices_count);
     towns_test[1].offices[0].packages_count = 4;
     towns_test[1].offices[0].min_weight = 1;
     towns_test[1].offices[0].max_weight = 4;
     towns_test[1].offices[0].packages = malloc(sizeof(package) * towns_test[1].offices[0].packages_count);
-    towns_test[1].offices[0].packages[0].id = 'd';
+    towns_test[1].offices[0].packages[0].id[0] = 'd';
     towns_test[1].offices[0].packages[0].weight = 1;
-    towns_test[1].offices[0].packages[1].id = 'e';
+    towns_test[1].offices[0].packages[1].id[0] = 'e';
     towns_test[1].offices[0].packages[1].weight = 2;
-    towns_test[1].offices[0].packages[2].id = 'f';
+    towns_test[1].offices[0].packages[2].id[0] = 'f';
     towns_test[1].offices[0].packages[2].weight = 3;
-    towns_test[1].offices[0].packages[3].id = 'h';
+    towns_test[1].offices[0].packages[3].id[0] = 'h';
     towns_test[1].offices[0].packages[3].weight = 4;
     return towns_test;
 }
 
-void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) {
-    assert__('A' == towns_test[0].name) {
+void precondition_unit_tests_for_towns_test (town* towns_test) {
+    assert__('A' == *towns_test[0].name) {
         printf("towns_test[0].name should equal 'A' but equals %s\n", towns_test[0].name);
     }
 
@@ -155,7 +182,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[0].offices[0].max_weight should equal 3 but equals %d\n", towns_test[0].offices[0].max_weight);
     }
 
-    assert__('a' == towns_test[0].offices[0].packages[0].id) {
+    assert__('a' == *towns_test[0].offices[0].packages[0].id) {
         printf("towns_test[0].offices[0].packages[0].id should equal 'a' but equals %s\n", towns_test[0].offices[0].packages[0].id);
     }
 
@@ -163,7 +190,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[0].offices[0].packages[0].weight should equal 2 but equals %d\n", towns_test[0].offices[0].packages[0].weight);
     }
 
-    assert__('b' == towns_test[0].offices[0].packages[1].id) {
+    assert__('b' == *towns_test[0].offices[0].packages[1].id) {
         printf("towns_test[0].offices[0].packages[1].id should equal 'b' but equals %s\n", towns_test[0].offices[0].packages[1].id);
     }
 
@@ -183,7 +210,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[0].offices[1].max_weight should equal 4 but equals %d\n", towns_test[0].offices[1].max_weight);
     }
 
-    assert__('c' == towns_test[0].offices[1].packages[0].id) {
+    assert__('c' == *towns_test[0].offices[1].packages[0].id) {
         printf("towns_test[0].offices[1].packages[0].id should equal 'c' but equals %s\n", towns_test[0].offices[1].packages[0].id);
     }
 
@@ -191,7 +218,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[0].offices[1].packages[0].weight should equal 2 but equals %d\n", towns_test[0].offices[1].packages[0].weight);
     }
 
-    assert__('B' == towns_test[1].name) {
+    assert__('B' == *towns_test[1].name) {
         printf("towns_test[1].name should equal 'B' but equals %s\n", towns_test[1].name);
     }
 
@@ -211,7 +238,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[1].offices[0].max_weight should equal 4 but equals %d\n", towns_test[1].offices[0].max_weight);
     }
 
-    assert__('d' == towns_test[1].offices[0].packages[0].id) {
+    assert__('d' == *towns_test[1].offices[0].packages[0].id) {
         printf("towns_test[1].offices[0].packages[0].id should equal 'd' but equals %s\n", towns_test[1].offices[0].packages[0].id);
     }
 
@@ -219,7 +246,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[1].offices[0].packages[0].weight should equal 1 but equals %d\n", towns_test[1].offices[0].packages[0].weight);
     }
 
-    assert__('e' == towns_test[1].offices[0].packages[1].id) {
+    assert__('e' == *towns_test[1].offices[0].packages[1].id) {
         printf("towns_test[1].offices[0].packages[1].id should equal 'e' but equals %s\n", towns_test[1].offices[0].packages[1].id);
     }
 
@@ -227,7 +254,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[1].offices[0].packages[1].weight should equal 2 but equals %d\n", towns_test[1].offices[0].packages[1].weight);
     }
 
-    assert__('f' == towns_test[1].offices[0].packages[2].id) {
+    assert__('f' == *towns_test[1].offices[0].packages[2].id) {
         printf("towns_test[1].offices[0].packages[2].id should equal 'f' but equals %s\n", towns_test[1].offices[0].packages[2].id);
     }
 
@@ -235,7 +262,7 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
         printf("towns_test[1].offices[0].packages[2].weight should equal 3 but equals %d\n", towns_test[1].offices[0].packages[2].weight);
     }
 
-    assert__('h' == towns_test[1].offices[0].packages[3].id) {
+    assert__('h' == *towns_test[1].offices[0].packages[3].id) {
         printf("towns_test[1].offices[0].packages[3].id should equal 'h' but equals %s\n", towns_test[1].offices[0].packages[3].id);
     }
 
@@ -244,15 +271,83 @@ void precondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) 
     }
 }
 
+void precondition_unit_tests_for_send_all_acceptable_packages (town* towns_test){
+    assert__(2 == towns_test[0].offices[0].packages_count) {
+        printf("towns_test[0].offices[0].packages_count should equal 2 but equals %d\n", towns_test[0].offices[0].packages_count);
+    }
+
+    assert__('a' == *towns_test[0].offices[0].packages[0].id) {
+        printf("towns_test[0].offices[0].packages[0].id should equal 'a' but equals %s\n", towns_test[0].offices[0].packages[0].id);
+    }
+
+    assert__(2 == towns_test[0].offices[0].packages[0].weight) {
+        printf("towns_test[0].offices[0].packages[0].weight should equal 2 but equals %d\n", towns_test[0].offices[0].packages[0].weight);
+    }
+
+    assert__('b' == *towns_test[0].offices[0].packages[1].id) {
+        printf("towns_test[0].offices[0].packages[1].id should equal 'b' but equals %s\n", towns_test[0].offices[0].packages[1].id);
+    }
+
+    assert__(3 == towns_test[0].offices[0].packages[1].weight) {
+        printf("towns_test[0].offices[0].packages[1].weight should equal 3 but equals %d\n", towns_test[0].offices[0].packages[1].weight);
+    }
+
+    assert__(1 == towns_test[0].offices[1].packages_count) {
+        printf("towns_test[0].offices[1].packages_count should equal 1 but equals %d\n", towns_test[0].offices[1].packages_count);
+    }
+
+    assert__('c' == *towns_test[0].offices[1].packages[0].id) {
+        printf("towns_test[0].offices[1].packages[0].id should equal 'c' but equals %s\n", towns_test[0].offices[1].packages[0].id);
+    }
+
+    assert__(2 == towns_test[0].offices[1].packages[0].weight) {
+        printf("towns_test[0].offices[1].packages[0].weight should equal 2 but equals %d\n", towns_test[0].offices[1].packages[0].weight);
+    }
+}
+
 void postcondition_unit_tests_for_send_all_acceptable_packages(town* towns_test) {
+    assert__(0 == &towns_test[0].offices[0].packages_count) {
+        printf("towns_test[0].offices[0].packages_count should equal 2 but equals %d\n", towns_test[0].offices[0].packages_count);
+    }
+
+    assert__(3 == towns_test[0].offices[1].packages_count) {
+        printf("towns_test[0].offices[1].packages_count should equal 1 but equals %d\n", towns_test[0].offices[1].packages_count);
+    }
+
+    assert__('c' == *towns_test[0].offices[1].packages[0].id) {
+        printf("towns_test[0].offices[1].packages[0].id should equal 'c' but equals %s\n", towns_test[0].offices[1].packages[0].id);
+    }
+
+    assert__(2 == towns_test[0].offices[1].packages[0].weight) {
+        printf("towns_test[0].offices[1].packages[0].weight should equal 2 but equals %d\n", towns_test[0].offices[1].packages[0].weight);
+    }
+
+    assert__('a' == *towns_test[0].offices[1].packages[1].id) {
+        printf("towns_test[0].offices[1].packages[1].id should equal 'a' but equals %s\n", towns_test[0].offices[1].packages[1].id);
+    }
+
+    assert__(2 == towns_test[0].offices[1].packages[1].weight) {
+        printf("towns_test[0].offices[1].packages[1].weight should equal 2 but equals %d\n", towns_test[0].offices[1].packages[1].weight);
+    }
+
+    assert__('b' == *towns_test[0].offices[1].packages[2].id) {
+        printf("towns_test[0].offices[1].packages[2].id should equal 'b' but equals %s\n", towns_test[0].offices[1].packages[2].id);
+    }
+
+    assert__(3 == towns_test[0].offices[1].packages[2].weight) {
+        printf("towns_test[0].offices[1].packages[2].weight should equal 3 but equals %d\n", towns_test[0].offices[1].packages[2].weight);
+    }
 }
 
 int main() {
-    int towns_count = 2;
-    town* towns_test = initialize_towns(towns_count);
-    precondition_unit_tests_for_send_all_acceptable_packages(towns_test);
+    //int towns_count_test = 2;
+    //town* towns_test = initialize_towns(towns_count_test);
+    //precondition_unit_tests_for_towns_test(towns_test);
 
-    /*
+    //precondition_unit_tests_for_send_all_acceptable_packages(towns_test);
+    //send_all_acceptable_packages(&towns_test[0], 0, &towns_test[0], 1);
+    //postcondition_unit_tests_for_send_all_acceptable_packages(towns_test);
+
     int towns_count;
     scanf("%d", &towns_count);
     town* towns = malloc(sizeof(town)*towns_count);
@@ -300,7 +395,7 @@ int main() {
                 break;
         }
     }
-    */
 
     return 0;
 }
+
