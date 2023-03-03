@@ -122,10 +122,34 @@ town* find_town(town* towns, int towns_count, char* name) {
     return town;
 }
 
+// Beginning of code refactor to combine the two methods of HackerRank's method of initializing towns and mine for unit tests with assert statements
+town* init_towns(int town_count, char town_name[], int office_count[], int package_metadata[][3], char package_id[], int package_weight[]) {
+    town* towns = malloc(sizeof(town) * town_count);
+
+    int packages_processed = 0;
+
+    for (int i = 0; i < town_count; i++) {
+        towns[i].name[0] = town_name[i];
+        towns[i].offices_count = office_count[i];
+
+        for (int j = 0; j < towns[i].offices_count; j++) {
+            towns[i].offices[j].packages_count = package_metadata[j * 3];
+            towns[i].offices[j].min_weight = package_metadata[(j * 3) + 1];
+            towns[i].offices[j].max_weight = package_metadata[(j * 3) + 2];
+
+            for (int k = 0; k < towns[i].offices[j].packages_count; k++) {
+                towns[i].offices[j].packages[k].id = package_id[packages_processed];
+                towns[i].offices[j].packages[k].weight = package_weight[packages_processed];
+                packages_processed++;
+            }
+        }
+    }
+}
+
 town* initialize_towns(int towns_count) {
     town* towns_test = malloc(sizeof(town)*towns_count);
     towns_test[0].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
-    towns_test[0].name[0] = 'A';
+    towns_test[0].name = 'A';
     towns_test[0].offices_count = 2;
     towns_test[0].offices = malloc(sizeof(post_office) * towns_test[0].offices_count);
     towns_test[0].offices[0].packages_count = 2;
@@ -348,7 +372,7 @@ int main() {
     send_all_acceptable_packages(&towns_test[0], 0, &towns_test[0], 1);
     postcondition_unit_tests_for_send_all_acceptable_packages(towns_test);
 
-    
+    // Refactor this into the initialize_towns method with a test_bool flag and if/else statements
     int towns_count;
     scanf("%d", &towns_count);
     town* towns = malloc(sizeof(town)*towns_count);
@@ -397,7 +421,8 @@ int main() {
         }
     }
 
-    
+
     return 0;
 }
+
 
