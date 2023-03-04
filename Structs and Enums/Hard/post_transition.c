@@ -122,7 +122,7 @@ town* find_town(town* towns, int towns_count, char* name) {
     return town;
 }
 
-// Beginning of code refactor to combine the two methods of HackerRank's method of initializing towns and mine for unit tests with assert statements
+// Beginning of code refactor to combine the two methods of populating town structs: HackerRank's and mine
 town* init_towns(int town_count, char town_name[], int office_count[], int package_metadata[][3], char package_id[], int package_weight[]) {
     town* towns = malloc(sizeof(town) * town_count);
 
