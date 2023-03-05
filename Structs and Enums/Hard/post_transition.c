@@ -122,67 +122,42 @@ town* find_town(town* towns, int towns_count, char* name) {
     return town;
 }
 
-// Beginning of code refactor to combine the two methods of populating town structs: HackerRank's and mine
-town* init_towns(int town_count, char town_name[], int office_count[], int package_metadata[][3], char package_id[], int package_weight[]) {
+// Beginning of code refactor to combine the two methods of HackerRank's method of initializing towns and mine for unit tests with assert statements
+town* init_towns(int town_count, char town_name[], int office_count[], int package_metadata[], char package_id[], int package_weight[], int manual_init) {
+    //int tc = (manual_init) ? town_count : scanf("%d");
     town* towns = malloc(sizeof(town) * town_count);
 
     int packages_processed = 0;
+    int offices_processed = 0;
 
     for (int i = 0; i < town_count; i++) {
-        towns[i].name[0] = town_name[i];
-        towns[i].offices_count = office_count[i];
+        towns[i].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
+
+        (manual_init) ? towns[i].name[0] = town_name[i] : scanf("%s", towns[i].name);
+        (manual_init) ? towns[i].offices_count = office_count[i] : scanf("%d", &towns[i].offices_count);
+
+        towns[i].offices = malloc(sizeof(post_office) * towns[i].offices_count);
 
         for (int j = 0; j < towns[i].offices_count; j++) {
-            towns[i].offices[j].packages_count = package_metadata[j * 3];
-            towns[i].offices[j].min_weight = package_metadata[(j * 3) + 1];
-            towns[i].offices[j].max_weight = package_metadata[(j * 3) + 2];
+            (manual_init) ? towns[i].offices[j].packages_count = package_metadata[offices_processed * 3] : scanf("%d", &towns[i].offices[j].packages_count);
+            (manual_init) ? towns[i].offices[j].min_weight = package_metadata[(offices_processed * 3) + 1] : scanf("%d", &towns[i].offices[j].min_weight);
+            (manual_init) ? towns[i].offices[j].max_weight = package_metadata[(offices_processed * 3) + 2] : scanf("%d", &towns[i].offices[j].max_weight);
 
+            towns[i].offices[j].packages = malloc(sizeof(package) * towns[i].offices[j].packages_count);
+
+            offices_processed++;
             for (int k = 0; k < towns[i].offices[j].packages_count; k++) {
-                towns[i].offices[j].packages[k].id = package_id[packages_processed];
-                towns[i].offices[j].packages[k].weight = package_weight[packages_processed];
+                towns[i].offices[j].packages[k].id = malloc(sizeof(char) * MAX_STRING_LENGTH);
+
+                (manual_init) ? towns[i].offices[j].packages[k].id = package_id[packages_processed] : scanf("%s", towns[i].offices[j].packages[k].id);
+                (manual_init) ? towns[i].offices[j].packages[k].weight = package_weight[packages_processed] : scanf("%d", &towns[i].offices[j].packages[k].weight);
+
                 packages_processed++;
             }
         }
     }
-}
 
-town* initialize_towns(int towns_count) {
-    town* towns_test = malloc(sizeof(town)*towns_count);
-    towns_test[0].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
-    towns_test[0].name = 'A';
-    towns_test[0].offices_count = 2;
-    towns_test[0].offices = malloc(sizeof(post_office) * towns_test[0].offices_count);
-    towns_test[0].offices[0].packages_count = 2;
-    towns_test[0].offices[0].min_weight = 1;
-    towns_test[0].offices[0].max_weight = 3;
-    towns_test[0].offices[0].packages = malloc(sizeof(package) * towns_test[0].offices[0].packages_count);
-    towns_test[0].offices[0].packages[0].id = 'a';
-    towns_test[0].offices[0].packages[0].weight = 2;
-    towns_test[0].offices[0].packages[1].id = 'b';
-    towns_test[0].offices[0].packages[1].weight = 3;
-    towns_test[0].offices[1].packages_count = 1;
-    towns_test[0].offices[1].min_weight = 2;
-    towns_test[0].offices[1].max_weight = 4;
-    towns_test[0].offices[1].packages = malloc(sizeof(package) * towns_test[0].offices[1].packages_count);
-    towns_test[0].offices[1].packages[0].id = 'c';
-    towns_test[0].offices[1].packages[0].weight = 2;
-    towns_test[1].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
-    towns_test[1].name[0] = 'B';
-    towns_test[1].offices_count = 1;
-    towns_test[1].offices = malloc(sizeof(post_office) * towns_test[1].offices_count);
-    towns_test[1].offices[0].packages_count = 4;
-    towns_test[1].offices[0].min_weight = 1;
-    towns_test[1].offices[0].max_weight = 4;
-    towns_test[1].offices[0].packages = malloc(sizeof(package) * towns_test[1].offices[0].packages_count);
-    towns_test[1].offices[0].packages[0].id = 'd';
-    towns_test[1].offices[0].packages[0].weight = 1;
-    towns_test[1].offices[0].packages[1].id = 'e';
-    towns_test[1].offices[0].packages[1].weight = 2;
-    towns_test[1].offices[0].packages[2].id = 'f';
-    towns_test[1].offices[0].packages[2].weight = 3;
-    towns_test[1].offices[0].packages[3].id = 'h';
-    towns_test[1].offices[0].packages[3].weight = 4;
-    return towns_test;
+    return towns;
 }
 
 void precondition_unit_tests_for_towns_test (town* towns_test) {
@@ -364,33 +339,22 @@ void postcondition_unit_tests_for_send_all_acceptable_packages(town* towns_test)
 }
 
 int main() {
-    int towns_count_test = 2;
-    town* towns_test = initialize_towns(towns_count_test);
+    town* towns_test = init_towns(2, (char[2]){'A', 'B'},
+                                  (int[2]){2, 1},
+                                  (int[9]){2, 1, 3, 1, 2, 4, 4, 1, 4},
+                                  (char[7]){'a', 'b', 'c', 'd', 'e', 'f', 'h'},
+                                  (int[7]){2, 3, 2, 1, 2, 3, 4},
+                                  1);
+
     precondition_unit_tests_for_towns_test(towns_test);
 
     precondition_unit_tests_for_send_all_acceptable_packages(towns_test);
     send_all_acceptable_packages(&towns_test[0], 0, &towns_test[0], 1);
     postcondition_unit_tests_for_send_all_acceptable_packages(towns_test);
 
-    // Refactor this into the initialize_towns method with a test_bool flag and if/else statements
-    int towns_count;
+    int towns_count = malloc(sizeof(int));
     scanf("%d", &towns_count);
-    town* towns = malloc(sizeof(town)*towns_count);
-    for (int i = 0; i < towns_count; i++) {
-        towns[i].name = malloc(sizeof(char) * MAX_STRING_LENGTH);
-        scanf("%s", towns[i].name);
-        scanf("%d", &towns[i].offices_count);
-        towns[i].offices = malloc(sizeof(post_office)*towns[i].offices_count);
-        for (int j = 0; j < towns[i].offices_count; j++) {
-            scanf("%d%d%d", &towns[i].offices[j].packages_count, &towns[i].offices[j].min_weight, &towns[i].offices[j].max_weight);
-            towns[i].offices[j].packages = malloc(sizeof(package)*towns[i].offices[j].packages_count);
-            for (int k = 0; k < towns[i].offices[j].packages_count; k++) {
-                towns[i].offices[j].packages[k].id = malloc(sizeof(char) * MAX_STRING_LENGTH);
-                scanf("%s", towns[i].offices[j].packages[k].id);
-                scanf("%d", &towns[i].offices[j].packages[k].weight);
-            }
-        }
-    }
+    town* towns = init_towns(towns_count, NULL, NULL, NULL, NULL, NULL, 0);
 
     int queries;
     scanf("%d", &queries);
@@ -424,5 +388,7 @@ int main() {
 
     return 0;
 }
+
+
 
 
