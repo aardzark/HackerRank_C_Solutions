@@ -214,7 +214,7 @@ If the integer is `3`, no lines follow and the town with the most number of pack
 ### Constraints
 
 * All integer are between `0` and `10`.
-* 'towns_count' $\gt 0$, `offices_count` $\gt 0$.
+* `towns_count` $\gt 0$, `offices_count` $\gt 0$.
 * All strings have length $\leq 5$
 * All towns' names have only uppercase english letters and are unique.
 * All packages' ids have only lowercase english letters and are unique.
